@@ -2,7 +2,7 @@
 
 # Set variables
 RG=ai200-exam-rg
-SUBSCRIPTION_TO_CLEAN=e2fbc9d4-dd70-4840-9a07-5f9523648a12
+SUBSCRIPTION_TO_CLEAN=$AZURE_SUBSCRIPTION_ID
 
 # Stop on first error
 set -e

@@ -9,10 +9,10 @@ CONTAINER_NAME=ai200-container
 SEARCH_NAME=ai200searchai
 
 # Login to my VS Prof Subscription To be updated in 08/26
-az login --subscription e2fbc9d4-dd70-4840-9a07-5f9523648a12
+az login --subscription $AZURE_SUBSCRIPTION_ID
 
 # Login to my VS Prof Subscription Second Not used
-az login --subscription e4d67341-6ba7-4a2f-9a69-925d5a6227e4
+az login --subscription $AZURE_SUBSCRIPTION_ID
 
 # Resource group - create
 az group create \
@@ -48,7 +48,7 @@ az role assignment create \
         --query id \
         --output tsv)
 
-# /subscriptions/e2fbc9d4-dd70-4840-9a07-5f9523648a12/resourceGroups/ai200-exam-rg/providers/Microsoft.Storage/storageAccounts/ai200storageaccount
+# /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/ai200-exam-rg/providers/Microsoft.Storage/storageAccounts/ai200storageaccount
 az storage account show \
         --name $STORAGE_ACCOUNT \
         --resource-group $RG \

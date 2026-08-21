@@ -9,9 +9,9 @@ SEARCH_NAME=ai200searchai # Globally unique
 set -e
 
 # Login to my VS Prof Subscription In use
-az login --subscription e2fbc9d4-dd70-4840-9a07-5f9523648a12
+az login --subscription $AZURE_SUBSCRIPTION_ID
 # required for creating role assignments
-az account set --subscription e2fbc9d4-dd70-4840-9a07-5f9523648a12
+az account set --subscription $AZURE_SUBSCRIPTION_ID
 
 # Verify the current subscription
 echo ">> account show:"
