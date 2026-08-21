@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DocumentIngestor/DocumentIngestor.csproj" />
+  <Project Path="HikingAssistant/HikingAssistant.csproj" />
+  <Project Path="SearchBootstrapper/SearchBootstrapper.csproj" />
+  <Project Path="Shared/Shared.csproj" />
+</Solution>

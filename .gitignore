@@ -1,0 +1,27 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# User and IDE files
+.vs/
+*.user
+*.suo
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temp files
+*.log
+*.tmp
+*.txt
+
+# User files and generated output
+DocumentIngestor/output/**
+HikingAssistant/Knowledge/**
+infra/raw/**
+
+# OS files
+.DS_Store
+Thumbs.db
