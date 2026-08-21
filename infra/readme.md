@@ -33,7 +33,7 @@ az storage container create \
     --name $CONTAINER_NAME \
     --auth-mode login
 
-# Signed in user ID: 3717ee62-ae64-4399-a962-ace552f4bddf
+# Signed in user ID: $SIGNED_IN_USER_ID
 az ad signed-in-user show \
     --query id \
     --output tsv
