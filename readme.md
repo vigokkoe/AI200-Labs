@@ -1,57 +1,102 @@
 # AI200-Labs
 
-This repository contains a practical study project for Microsoft AI-200 preparation.
-It demonstrates an end-to-end Retrieval-Augmented Generation (RAG) workflow on Azure:
+AI200-Labs is a practical AI engineering project on Azure that demonstrates how to build the core pieces behind a knowledge-grounded assistant: search index provisioning, document ingestion and embedding generation, and a chat application that answers with grounded context.
 
-- Provision an Azure AI Search index.
-- Ingest source documents from storage.
-- Extract and chunk text.
-- Generate embeddings with Azure OpenAI.
-- Store searchable chunks in Azure AI Search.
-- Run a chat assistant that answers using indexed knowledge.
+## What I Built
 
-## Solution structure
+I implemented a multi-project .NET solution with three executable components:
 
-- `infra/` contains helper scripts and notes for Azure cloud resource setup.
-- `SearchBootstrapper/` creates and provisions the Azure AI Search schema.
-- `DocumentIngestor/` reads source files, extracts text, chunks content, and writes vectors/documents to search.
-- `HikingAssistant/` provides a chat interface that retrieves context from search and calls Azure OpenAI.
-- `Shared/` contains shared configuration models and extensions used by the apps.
+- Search schema provisioning for Azure AI Search.
+- PDF ingestion from Azure Blob Storage with extraction, chunking, and embedding generation.
+- A user-facing console assistant that uses Azure OpenAI with explicit grounding instructions.
 
-## Technology stack
+Together, these components represent the production-facing building blocks of a Retrieval-Augmented Generation (RAG) system.
 
-- .NET 10
-- Azure AI Search
-- Azure OpenAI
-- Azure Storage Blobs
+## What I Implemented
 
-## Local configuration
+- Azure AI Search index bootstrap logic, including field schema generation and vector search profile setup.
+- Document processing pipeline: blob enumeration, PDF text extraction, sentence-based chunking with overlap, and Azure OpenAI embedding generation.
+- Structured chunk output as JSON artifacts for downstream indexing workflows.
+- Console chat assistant with conversation state, system prompt control, and grounded prompting against project knowledge.
+- Shared configuration model and environment-based secret loading across all apps.
 
-Use environment variables (or a local `.env` file) for secrets.
-Do not commit real keys to Git.
+## Architecture
 
-1. Copy `.env.example` to `.env`.
-2. Fill in your own values.
-3. Keep `.env` local only.
+```mermaid
+flowchart TD
+	A[PDF files in Azure Blob Storage] --> B[DocumentIngestor]
+	B --> B1[Extract text with PdfPig]
+	B1 --> B2[Chunk text]
+	B2 --> B3[Generate embeddings in Azure OpenAI]
+	B3 --> C[JSON chunk artifacts in output/]
 
-Expected environment variables:
+	D[SearchBootstrapper] --> E[Azure AI Search index schema]
 
-- `AzureOpenAI__ApiKey`
-- `AzureSearch__ApiKey`
-- `Storage__ApiKey`
+	U[User] --> H[HikingAssistant]
+	H --> K[Knowledge/vacation.txt]
+	H --> O[Azure OpenAI chat completion]
+	O --> U
+```
 
-Endpoints, deployment names, and non-secret defaults can stay in `appsettings*.json`.
+## Projects
 
-## Build and run
+### DocumentIngestor
 
-From repository root:
+Processes PDF documents from Blob Storage into chunked, embedded JSON artifacts.
+
+See [DocumentIngestor/readme.md](DocumentIngestor/readme.md).
+
+### SearchBootstrapper
+
+Creates and validates the Azure AI Search index structure used by document chunks.
+
+See [SearchBootstrapper/readme.md](SearchBootstrapper/readme.md).
+
+### HikingAssistant
+
+Console-based assistant that uses Azure OpenAI and grounded prompts for hiking-related Q&A.
+
+See [HikingAssistant/readme.md](HikingAssistant/readme.md).
+
+### Infrastructure
+
+Shell scripts for provisioning and deleting Azure resources used by this solution.
+
+See [infra/readme.md](infra/readme.md).
+
+## Technology Stack
+
+- .NET 10 (C#)
+- Azure OpenAI (`Azure.AI.OpenAI`)
+- Azure AI Search (`Azure.Search.Documents`)
+- Azure Blob Storage (`Azure.Storage.Blobs`)
+- PdfPig for PDF text extraction
+- DotNetEnv for local secret loading
+
+## AI / RAG Flow
+
+Implemented pipeline in this repository:
+
+1. Document ingestion from Azure Blob Storage.
+2. PDF text extraction.
+3. Chunking with overlap.
+4. Embedding generation with Azure OpenAI.
+5. Search index provisioning for chunk documents.
+6. Grounded LLM response generation in the assistant.
+
+Current implementation note: the `HikingAssistant` app grounds responses from a local knowledge file and does not yet execute Azure AI Search retrieval queries at runtime.
+
+## Running the Project
+
+1. Copy `.env.example` to `.env` and set your own keys.
+2. Build the solution:
 
 ```bash
 dotnet restore
 dotnet build AI200-Labs.slnx
 ```
 
-Run apps as needed:
+3. Run components as needed:
 
 ```bash
 dotnet run --project SearchBootstrapper/SearchBootstrapper.csproj
@@ -59,6 +104,24 @@ dotnet run --project DocumentIngestor/DocumentIngestor.csproj
 dotnet run --project HikingAssistant/HikingAssistant.csproj
 ```
 
-## Security note
+Project-level run details:
 
-If a secret was ever committed or shared, rotate it in Azure and replace it locally.
+- [SearchBootstrapper/readme.md](SearchBootstrapper/readme.md)
+- [DocumentIngestor/readme.md](DocumentIngestor/readme.md)
+- [HikingAssistant/readme.md](HikingAssistant/readme.md)
+
+## AI-200
+
+This project was developed while preparing for Microsoft AI-200, but it is structured here as a practical implementation of Azure-based AI application patterns.
+
+## Learning Notes
+
+Original AI-200 learning and operational notes are preserved in:
+
+- [docs/learning-notes/AI200.md](docs/learning-notes/AI200.md)
+- [docs/learning-notes/Azure-AI-Search.md](docs/learning-notes/Azure-AI-Search.md)
+- [docs/learning-notes/Document-Ingestion.md](docs/learning-notes/Document-Ingestion.md)
+
+## Author
+
+Repository owner: vigokkoe.

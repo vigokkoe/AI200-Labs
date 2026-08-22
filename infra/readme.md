@@ -1,124 +1,61 @@
-# 1. Create Infra first
+# Infrastructure
 
-# Exercise 4 – Build Your First RAG with Azure AI Search -> Infra
-# Set variables
-RG=ai200-exam-rg
-LOCATION=swedencentral
-STORAGE_ACCOUNT=ai200storageaccount
-CONTAINER_NAME=ai200-container
-SEARCH_NAME=ai200searchai
+## Purpose
 
-# Login to my VS Prof Subscription To be updated in 08/26
-az login --subscription $AZURE_SUBSCRIPTION_ID
+The `infra` folder contains shell scripts used to provision and tear down Azure resources required by this repository.
 
-# Login to my VS Prof Subscription Second Not used
-az login --subscription $AZURE_SUBSCRIPTION_ID
+## What Is Provisioned
 
-# Resource group - create
-az group create \
-    --name $RG \
-    --location $LOCATION
+Based on `infra/scripts/create-resources.sh`, the script provisions:
 
-# Storage account - create
-az storage account create \
-    --name $STORAGE_ACCOUNT \
-    --resource-group $RG \
-    --location $LOCATION \
-    --sku Standard_LRS \
-    --kind StorageV2
-    
-# Container - create
-az storage container create \
-    --account-name $STORAGE_ACCOUNT \
-    --name $CONTAINER_NAME \
-    --auth-mode login
+- Azure Resource Group
+- Azure Storage Account and Blob Container (source PDF storage)
+- Azure AI Search service
+- Azure AI Foundry/Azure AI Services account
+- Embedding model deployment (`text-embedding-ada-002`)
 
-# Signed in user ID: $SIGNED_IN_USER_ID
-az ad signed-in-user show \
-    --query id \
-    --output tsv
+It also uploads sample PDF files from `infra/raw/` to Blob Storage.
 
-# Assign a role to the user
-az role assignment create \
-    --assignee <OBJECT_ID> \
-    --role "Storage Blob Data Contributor" \
-    --scope $(az storage account show \
-        --name $STORAGE_ACCOUNT \
-        --resource-group $RG \
-        --query id \
-        --output tsv)
+## Architecture
 
-# /subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/ai200-exam-rg/providers/Microsoft.Storage/storageAccounts/ai200storageaccount
-az storage account show \
-        --name $STORAGE_ACCOUNT \
-        --resource-group $RG \
-        --query id \
-        --output tsv
+```mermaid
+flowchart LR
+    A[create-resources.sh] --> B[Resource Group]
+    B --> C[Storage Account + Blob Container]
+    B --> D[Azure AI Search]
+    B --> E[Azure AI Foundry / AI Services]
+    E --> F[Embedding deployment]
+    C --> G[Source PDFs]
+```
 
-# Upload a PDF
-az storage blob upload \
-    --account-name $STORAGE_ACCOUNT \
-    --container-name $CONTAINER_NAME \
-    --name climbing.pdf \
-    --file climbing.pdf \
-    --auth-mode login
+## How It Relates to the Applications
 
-# Container list
-az storage container list \
-    --account-name $STORAGE_ACCOUNT \
-    --auth-mode login \
-    --output table
+- `DocumentIngestor` reads PDFs from the provisioned Blob container and generates embeddings.
+- `SearchBootstrapper` connects to the provisioned Azure AI Search service and creates the index.
+- `HikingAssistant` uses Azure OpenAI configuration values hosted in the AI service account.
 
-# List blobs - uploaded pdf-files
-az storage blob list \
-    --account-name $STORAGE_ACCOUNT \
-    --container-name $CONTAINER_NAME \
-    --auth-mode login \
-    --output table
-# only file names
-    --query "[].name" \
-    --output tsv
-        
-5. Azure AI Search
-# Verify
-az search service show \
-    --name $SEARCH_NAME \
-    --resource-group $RG \
-    --output table
+## Deployment
 
-# Show Admin key
-az search admin-key show \
-  --service-name $SEARCH_NAME \
-  --resource-group $RG \
-  --query primaryKey \
-  -o tsv
+From the `infra/scripts/` directory:
 
-# List indexes
-## Get admin key
-ADMIN_KEY=$(az search admin-key show --service-name "$SEARCH_NAME" --resource-group "$RG" --query primaryKey -o tsv)
-## List indexes
-az rest --method get --uri "https://$SEARCH_NAME.search.windows.net/indexes?api-version=2024-07-01" --headers "api-key=$ADMIN_KEY"
+```bash
+bash create-resources.sh
+```
 
-# Delete Search service by name
-az search service delete -n $SEARCH_NAME    --resource-group $RG
-# List available Search services
- az search service list     --resource-group $RG
+To clean up:
 
-# Verify endpoint exists > https://ai200-labs-foundry.cognitiveservices.azure.com/
-az cognitiveservices account show \
-  --name ai200-labs-foundry \
-  --resource-group ai200-exam-rg \
-  --query properties.endpoint
+```bash
+bash delete-resources.sh
+```
 
-# Verify deployment exists
-az cognitiveservices account deployment list \
-    --name ai200-labs-foundry \
-    --resource-group ai200-exam-rg \
-    --output table
+## Configuration and Security
 
-# Verify API key -> set to .env AzureOpenAI__ApiKey
-az cognitiveservices account keys list \
-    --name ai200-labs-foundry \
-    --resource-group ai200-exam-rg
+- Set `AZURE_SUBSCRIPTION_ID` in your environment before running scripts.
+- Use your own globally unique resource names.
+- Do not commit API keys, subscription IDs, or local `.env` values.
 
-#
+## Related Documentation
+
+- [../readme.md](../readme.md)
+- [../docs/learning-notes/AI200.md](../docs/learning-notes/AI200.md)
+- [../docs/learning-notes/Azure-AI-Search.md](../docs/learning-notes/Azure-AI-Search.md)
